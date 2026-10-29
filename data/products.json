@@ -5,5 +5,12 @@
     "name": "JIO BHARAT V4",
     "description": "Price 899\n4G Support Only",
     "imageUrl": "https://raw.githubusercontent.com/amitkumar02177-debug/product-catalog-app/main/uploads/images/1793264354252_jio_bharat_v4.png"
+  },
+  {
+    "id": "1793266638878",
+    "type": "Mobile",
+    "name": "LAVA A1 JOSH",
+    "description": "Price 1490/-\nSupport Only Airtel, VI, BSNL",
+    "imageUrl": "https://raw.githubusercontent.com/amitkumar02177-debug/product-catalog-app/main/uploads/images/1793266638878_lava_a1_josh.png"
   }
 ]
