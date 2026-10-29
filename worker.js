@@ -32,7 +32,7 @@ async function handleSearch(url, env) {
   const queryName = (url.searchParams.get('name') || '').toLowerCase();
 
   try {
-    const githubUrl = `https://api.github.com/repos/${env.GITHUB_REPO_OWNER}/${env.GITHUB_REPO_NAME}/contents/data/products.json`;
+    const githubUrl = `https://api.github.com/repos/${env.GITHUB_REPO_OWNER}/${env.GITHUB_REPO_NAME}/contents/data/products.json?t=${Date.now()}`;
     const res = await fetch(githubUrl, {
       headers: {
         'User-Agent': 'CloudflareWorker-App',
