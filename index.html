@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Product Catalog App</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>Product Hub</h1>
+    <nav class="nav-tabs">
+      <button id="tab-search-btn" class="tab-btn active" onclick="switchTab('search')">Search</button>
+      <button id="tab-submit-btn" class="tab-btn" onclick="switchTab('submit')">Add New</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <!-- SEARCH VIEW -->
+    <section id="search-view" class="view active-view">
+      <form id="search-form" class="card-form" onsubmit="handleSearch(event)">
+        <div class="form-group">
+          <label for="search-type">Product Category</label>
+          <select id="search-type" class="form-input">
+            <option value="">All Categories</option>
+            <option value="Mobile">Mobile</option>
+            <option value="Appliance">Appliance</option>
+            <option value="Electronics">Electronics</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="search-query">Product Name</label>
+          <input type="text" id="search-query" class="form-input" placeholder="e.g. iPhone 15, Refrigerator" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Search Catalog</button>
+      </form>
+
+      <div id="results-container" class="results-grid"></div>
+    </section>
+
+    <!-- SUBMISSION VIEW -->
+    <section id="submit-view" class="view hidden-view">
+      <form id="submit-form" class="card-form" onsubmit="handleSubmit(event)">
+        <h2>Submit Product</h2>
+        <div class="form-group">
+          <label for="submit-type">Product Type</label>
+          <select id="submit-type" class="form-input" required>
+            <option value="">Select Type</option>
+            <option value="Mobile">Mobile</option>
+            <option value="Appliance">Appliance</option>
+            <option value="Electronics">Electronics</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="submit-name">Product Name</label>
+          <input type="text" id="submit-name" class="form-input" placeholder="Enter full name" required maxlength="100">
+        </div>
+        <div class="form-group">
+          <label for="submit-image">Product Image</label>
+          <input type="file" id="submit-image" class="form-input" accept="image/png, image/jpeg, image/webp" required onchange="previewImage(event)">
+          <div id="image-preview-container" class="preview-box hidden">
+            <img id="image-preview" src="" alt="Preview">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="submit-description">Description</label>
+          <textarea id="submit-description" class="form-input" rows="4" placeholder="Enter product details..." required maxlength="500"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="submit-password">Submission Password</label>
+          <input type="password" id="submit-password" class="form-input" placeholder="Enter security password" required>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="switchTab('search')">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="submit-btn">Submit Product</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="script.js"></script>
+</body>
+</html>
