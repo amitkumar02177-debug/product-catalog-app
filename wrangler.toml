@@ -7,6 +7,3 @@ account_id = "ad8a55a4a362f2fe84e4bce907bc975a"
 GITHUB_REPO_OWNER = "amitkumar02177-debug"
 GITHUB_REPO_NAME = "product-catalog-app"
 
-[assets]
-directory = "."
-binding = "ASSETS"
