@@ -10,8 +10,14 @@ export default {
       return handleSubmit(request, env);
     }
 
-    // Serve static files from assets or fallback
-    return env.ASSETS ? env.ASSETS.fetch(request) : new Response('Not found', { status: 404 });
+    // Serve the frontend UI directly
+    if (url.pathname === '/' || url.pathname === '/index.html') {
+      return new Response(HTML_PAGE, {
+        headers: { 'Content-Type': 'text/html;charset=UTF-8' }
+      });
+    }
+
+    return new Response('Not found', { status: 404 });
   }
 };
 
@@ -139,3 +145,25 @@ async function handleSubmit(request, env) {
     return new Response(JSON.stringify({ success: false, message: err.message }), { headers: HEADERS, status: 500 });
   }
 }
+
+// Paste your index.html content here inside the backticks:
+const HTML_PAGE = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Catalog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="max-w-4xl mx-auto p-6">
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-gray-900">Product Catalog</h1>
+            <p class="text-gray-600 mt-2">Welcome to your live catalog deployed via Cloudflare Workers!</p>
+        </header>
+        <main class="bg-white rounded-xl shadow p-6">
+            <p class="text-center text-gray-500">Catalog UI is active and ready.</p>
+        </main>
+    </div>
+</body>
+</html>`;
