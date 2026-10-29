@@ -3,8 +3,8 @@ main = "worker.js"
 compatibility_date = "2024-01-01"
 
 [vars]
-GITHUB_REPO_OWNER = "YOUR_GITHUB_USERNAME"
-GITHUB_REPO_NAME = "YOUR_REPOSITORY_NAME"
+GITHUB_REPO_OWNER = "amitkumar02177-debug"
+GITHUB_REPO_NAME = "amitkumar02177-debug/product-catalog-app"
 
 [assets]
 directory = "."
