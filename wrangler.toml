@@ -1,6 +1,7 @@
 name = "product-catalog-worker"
 main = "worker.js"
 compatibility_date = "2024-01-01"
+account_id = "ad8a55a4a362f2fe84e4bce907bc975a"
 
 [vars]
 GITHUB_REPO_OWNER = "amitkumar02177-debug"
