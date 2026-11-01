@@ -61,8 +61,8 @@ async function handleSubmit(request, env) {
   try {
     const body = await request.json();
 
-    // 1. Password Verification Check (fallback to 'admin123')
-    const validPassword = env.SUBMISSION_PASSWORD || 'admin123';
+    // 1. Password Verification Check (fallback to 'aditi108')
+    const validPassword = env.SUBMISSION_PASSWORD || 'aditi108';
     if (!body.password || body.password !== validPassword) {
       return new Response(JSON.stringify({ success: false, message: 'Unauthorized: Incorrect password' }), {
         headers: HEADERS,
@@ -85,7 +85,7 @@ async function handleSubmit(request, env) {
       method: 'PUT',
       headers: {
         'User-Agent': 'CloudflareWorker-App',
-        'Authorization': `Bearer ${env.GITHUB_PERSONAL_ACCESS_TOKEN}`,
+        'Authorization': `Bearer ${env.GH_ACCESS_TOKEN}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -107,7 +107,7 @@ async function handleSubmit(request, env) {
     const dataRes = await fetch(dataUrl, {
       headers: {
         'User-Agent': 'CloudflareWorker-App',
-        'Authorization': `Bearer ${env.GITHUB_PERSONAL_ACCESS_TOKEN}`
+        'Authorization': `Bearer ${env.GH_ACCESS_TOKEN}`
       }
     });
 
@@ -132,7 +132,7 @@ async function handleSubmit(request, env) {
       method: 'PUT',
       headers: {
         'User-Agent': 'CloudflareWorker-App',
-        'Authorization': `Bearer ${env.GITHUB_PERSONAL_ACCESS_TOKEN}`,
+        'Authorization': `Bearer ${env.GH_ACCESS_TOKEN}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
