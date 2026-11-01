@@ -201,7 +201,7 @@ const HTML_PAGE = `<!DOCTYPE html>
     .product-info .badge { display: inline-block; background: #eef5ff; color: var(--primary-color); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-bottom: 6px; }
     .product-info p { font-size: 0.875rem; color: var(--text-muted); }
     
-    /* Enlarged Full-Screen Detail View Styles */
+    /* Maximum Height Full-Screen Detail View Styles */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -216,11 +216,11 @@ const HTML_PAGE = `<!DOCTYPE html>
     }
     .modal-header h2 { font-size: 1.2rem; }
     .modal-body {
-      padding: 20px; max-width: 700px; width: 100%; margin: 0 auto;
+      padding: 20px; max-width: 750px; width: 100%; margin: 0 auto;
       display: flex; flex-direction: column; gap: 20px; flex: 1;
     }
     .image-container {
-      position: relative; width: 100%; height: 50vh; min-height: 400px; background: #000;
+      position: relative; width: 100%; height: 60vh; min-height: 500px; background: #000;
       border-radius: var(--radius); overflow: hidden; display: flex;
       justify-content: center; align-items: center;
     }
@@ -327,7 +327,7 @@ const HTML_PAGE = `<!DOCTYPE html>
     </section>
   </main>
 
-  <!-- ENLARGED FULL-SCREEN PRODUCT DETAIL VIEW -->
+  <!-- MAXIMUM HEIGHT PRODUCT DETAIL VIEW -->
   <div id="product-modal" class="modal-overlay hidden">
     <div class="modal-header">
       <h2>Product Details</h2>
