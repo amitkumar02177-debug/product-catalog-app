@@ -201,32 +201,32 @@ const HTML_PAGE = `<!DOCTYPE html>
     .product-info .badge { display: inline-block; background: #eef5ff; color: var(--primary-color); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-bottom: 6px; }
     .product-info p { font-size: 0.875rem; color: var(--text-muted); }
     
-    /* Modal Detail Overlay Styles */
+    /* True Full-Screen Detail View Styles */
     .modal-overlay {
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background-color: rgba(0, 0, 0, 0.7);
-      display: flex; justify-content: center; align-items: center;
-      z-index: 1000; padding: 16px;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-color: var(--card-bg);
+      display: flex; flex-direction: column;
+      z-index: 1000; overflow-y: auto;
     }
-    .modal-content {
-      background: var(--card-bg);
-      width: 100%; max-width: 500px;
-      border-radius: var(--radius);
-      padding: 20px;
-      display: flex; flex-direction: column; gap: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
-      position: relative;
-      max-height: 90vh; overflow-y: auto;
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--border-color);
+      position: sticky; top: 0; background: var(--card-bg); z-index: 10;
     }
-    .modal-content img {
-      width: 100%; max-height: 320px; object-fit: contain;
-      border-radius: 8px; background: #000;
+    .modal-header h2 { font-size: 1.2rem; }
+    .modal-body {
+      padding: 20px; max-width: 600px; width: 100%; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 16px; flex: 1;
+    }
+    .modal-body img {
+      width: 100%; max-height: 400px; object-fit: contain;
+      border-radius: var(--radius); background: #000;
     }
     .modal-close-btn {
-      position: absolute; top: 12px; right: 16px;
-      background: none; border: none; font-size: 1.8rem;
-      cursor: pointer; color: var(--text-muted); line-height: 1;
+      background: #e4e6eb; border: none; font-size: 1rem;
+      cursor: pointer; color: var(--text-color); padding: 8px 16px;
+      border-radius: 8px; font-weight: 600;
     }
 
     .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #323232; color: #fff; padding: 12px 24px; border-radius: 24px; font-size: 0.9rem; z-index: 1000; }
@@ -312,15 +312,18 @@ const HTML_PAGE = `<!DOCTYPE html>
     </section>
   </main>
 
-  <!-- FULL SCREEN PRODUCT DETAIL MODAL -->
-  <div id="product-modal" class="modal-overlay hidden" onclick="closeProductModal(event)">
-    <div class="modal-content" onclick="event.stopPropagation()">
-      <button class="modal-close-btn" onclick="closeProductModalDirect()">&times;</button>
+  <!-- TRUE FULL-SCREEN PRODUCT DETAIL VIEW -->
+  <div id="product-modal" class="modal-overlay hidden">
+    <div class="modal-header">
+      <h2>Product Details</h2>
+      <button class="modal-close-btn" onclick="closeProductModalDirect()">Close ✕</button>
+    </div>
+    <div class="modal-body">
       <img id="modal-img" src="" alt="Product Image">
       <div>
         <span id="modal-badge" class="badge"></span>
-        <h2 id="modal-title" style="font-size: 1.3rem; margin: 8px 0;"></h2>
-        <p id="modal-desc" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap;"></p>
+        <h1 id="modal-title" style="font-size: 1.5rem; margin: 8px 0;"></h1>
+        <p id="modal-desc" style="color: var(--text-muted); font-size: 1rem; line-height: 1.6; white-space: pre-wrap;"></p>
       </div>
     </div>
   </div>
@@ -441,19 +444,13 @@ const HTML_PAGE = `<!DOCTYPE html>
       }
     }
 
-    // Modal Control Functions
+    // Full-Screen View Control Functions
     function openProductModal(product) {
       document.getElementById('modal-img').src = product.imageUrl || 'https://via.placeholder.com/300';
       document.getElementById('modal-badge').innerText = product.type;
       document.getElementById('modal-title').innerText = product.name;
       document.getElementById('modal-desc').innerText = product.description;
       document.getElementById('product-modal').classList.remove('hidden');
-    }
-
-    function closeProductModal(event) {
-      if (event.target.id === 'product-modal') {
-        document.getElementById('product-modal').classList.add('hidden');
-      }
     }
 
     function closeProductModalDirect() {
@@ -491,7 +488,7 @@ const HTML_PAGE = `<!DOCTYPE html>
               <p>\${product.description}</p>
             </div>
           \`;
-          // Open screen-fit view when card is clicked
+          // Open true full-screen detail view when card is clicked
           card.onclick = () => openProductModal(product);
           resultsContainer.appendChild(card);
         });
