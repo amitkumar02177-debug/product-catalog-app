@@ -201,7 +201,7 @@ const HTML_PAGE = `<!DOCTYPE html>
     .product-info .badge { display: inline-block; background: #eef5ff; color: var(--primary-color); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-bottom: 6px; }
     .product-info p { font-size: 0.875rem; color: var(--text-muted); }
     
-    /* True Full-Screen Detail View Styles with Zoom */
+    /* Enlarged Full-Screen Detail View Styles */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -216,11 +216,11 @@ const HTML_PAGE = `<!DOCTYPE html>
     }
     .modal-header h2 { font-size: 1.2rem; }
     .modal-body {
-      padding: 20px; max-width: 600px; width: 100%; margin: 0 auto;
-      display: flex; flex-direction: column; gap: 16px; flex: 1;
+      padding: 20px; max-width: 700px; width: 100%; margin: 0 auto;
+      display: flex; flex-direction: column; gap: 20px; flex: 1;
     }
     .image-container {
-      position: relative; width: 100%; height: 350px; background: #000;
+      position: relative; width: 100%; height: 50vh; min-height: 400px; background: #000;
       border-radius: var(--radius); overflow: hidden; display: flex;
       justify-content: center; align-items: center;
     }
@@ -229,13 +229,13 @@ const HTML_PAGE = `<!DOCTYPE html>
       transition: transform 0.2s ease; transform-origin: center center;
     }
     .zoom-controls {
-      position: absolute; bottom: 12px; right: 12px;
+      position: absolute; bottom: 16px; right: 16px;
       display: flex; gap: 8px; background: rgba(0, 0, 0, 0.6);
       padding: 6px; border-radius: 8px; backdrop-filter: blur(4px);
     }
     .zoom-btn {
-      background: #fff; border: none; width: 36px; height: 36px;
-      border-radius: 6px; font-weight: bold; font-size: 1.1rem;
+      background: #fff; border: none; width: 40px; height: 40px;
+      border-radius: 6px; font-weight: bold; font-size: 1.2rem;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
     }
     .modal-close-btn {
@@ -327,7 +327,7 @@ const HTML_PAGE = `<!DOCTYPE html>
     </section>
   </main>
 
-  <!-- TRUE FULL-SCREEN PRODUCT DETAIL VIEW WITH ZOOM -->
+  <!-- ENLARGED FULL-SCREEN PRODUCT DETAIL VIEW -->
   <div id="product-modal" class="modal-overlay hidden">
     <div class="modal-header">
       <h2>Product Details</h2>
@@ -344,8 +344,8 @@ const HTML_PAGE = `<!DOCTYPE html>
       </div>
       <div>
         <span id="modal-badge" class="badge"></span>
-        <h1 id="modal-title" style="font-size: 1.5rem; margin: 8px 0;"></h1>
-        <p id="modal-desc" style="color: var(--text-muted); font-size: 1rem; line-height: 1.6; white-space: pre-wrap;"></p>
+        <h1 id="modal-title" style="font-size: 1.6rem; margin: 8px 0;"></h1>
+        <p id="modal-desc" style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.6; white-space: pre-wrap;"></p>
       </div>
     </div>
   </div>
@@ -467,7 +467,7 @@ const HTML_PAGE = `<!DOCTYPE html>
       }
     }
 
-    // Zoom & Full-Screen View Control Functions
+    // Modal Control Functions
     function openProductModal(product) {
       currentScale = 1;
       const imgElem = document.getElementById('modal-img');
@@ -485,8 +485,8 @@ const HTML_PAGE = `<!DOCTYPE html>
 
     function zoomImage(amount) {
       currentScale += amount;
-      if (currentScale < 1) currentScale = 1; // Don't shrink below normal
-      if (currentScale > 4) currentScale = 4; // Max zoom cap
+      if (currentScale < 1) currentScale = 1;
+      if (currentScale > 4) currentScale = 4;
       document.getElementById('modal-img').style.transform = \`scale(\${currentScale})\`;
     }
 
