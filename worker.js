@@ -201,7 +201,7 @@ const HTML_PAGE = `<!DOCTYPE html>
     .product-info .badge { display: inline-block; background: #eef5ff; color: var(--primary-color); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-bottom: 6px; }
     .product-info p { font-size: 0.875rem; color: var(--text-muted); }
     
-    /* Maximum Height Full-Screen Detail View Styles */
+    /* Pannable & Zoomable Full-Screen Detail View Styles */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -222,16 +222,19 @@ const HTML_PAGE = `<!DOCTYPE html>
     .image-container {
       position: relative; width: 100%; height: 60vh; min-height: 500px; background: #000;
       border-radius: var(--radius); overflow: hidden; display: flex;
-      justify-content: center; align-items: center;
+      justify-content: center; align-items: center; cursor: grab;
+      touch-action: none;
     }
+    .image-container:active { cursor: grabbing; }
     .image-container img {
       max-width: 100%; max-height: 100%; object-fit: contain;
-      transition: transform 0.2s ease; transform-origin: center center;
+      transform-origin: center center; user-select: none; pointer-events: none;
     }
     .zoom-controls {
       position: absolute; bottom: 16px; right: 16px;
       display: flex; gap: 8px; background: rgba(0, 0, 0, 0.6);
       padding: 6px; border-radius: 8px; backdrop-filter: blur(4px);
+      z-index: 5;
     }
     .zoom-btn {
       background: #fff; border: none; width: 40px; height: 40px;
@@ -327,18 +330,18 @@ const HTML_PAGE = `<!DOCTYPE html>
     </section>
   </main>
 
-  <!-- MAXIMUM HEIGHT PRODUCT DETAIL VIEW -->
+  <!-- PANNABLE & ZOOMABLE PRODUCT DETAIL VIEW -->
   <div id="product-modal" class="modal-overlay hidden">
     <div class="modal-header">
       <h2>Product Details</h2>
       <button class="modal-close-btn" onclick="closeProductModalDirect()">Close ✕</button>
     </div>
     <div class="modal-body">
-      <div class="image-container">
+      <div id="image-container" class="image-container">
         <img id="modal-img" src="" alt="Product Image">
         <div class="zoom-controls">
-          <button type="button" class="zoom-btn" onclick="zoomImage(0.25)" title="Zoom In">+</button>
-          <button type="button" class="zoom-btn" onclick="zoomImage(-0.25)" title="Zoom Out">-</button>
+          <button type="button" class="zoom-btn" onclick="zoomImage(0.5)" title="Zoom In">+</button>
+          <button type="button" class="zoom-btn" onclick="zoomImage(-0.5)" title="Zoom Out">-</button>
           <button type="button" class="zoom-btn" onclick="resetZoom()" title="Reset">⟲</button>
         </div>
       </div>
@@ -355,6 +358,11 @@ const HTML_PAGE = `<!DOCTYPE html>
   <script>
     let compressedImageDataUrl = null;
     let currentScale = 1;
+    let posX = 0;
+    let posY = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
 
     function switchTab(tabName) {
       const searchView = document.getElementById('search-view');
@@ -467,11 +475,13 @@ const HTML_PAGE = `<!DOCTYPE html>
       }
     }
 
-    // Modal Control Functions
+    // Modal & Drag/Pan Control Functions
     function openProductModal(product) {
       currentScale = 1;
+      posX = 0;
+      posY = 0;
+      updateImageTransform();
       const imgElem = document.getElementById('modal-img');
-      imgElem.style.transform = \`scale(\${currentScale})\`;
       imgElem.src = product.imageUrl || 'https://via.placeholder.com/300';
       document.getElementById('modal-badge').innerText = product.type;
       document.getElementById('modal-title').innerText = product.name;
@@ -485,15 +495,68 @@ const HTML_PAGE = `<!DOCTYPE html>
 
     function zoomImage(amount) {
       currentScale += amount;
-      if (currentScale < 1) currentScale = 1;
-      if (currentScale > 4) currentScale = 4;
-      document.getElementById('modal-img').style.transform = \`scale(\${currentScale})\`;
+      if (currentScale < 1) {
+        currentScale = 1;
+        posX = 0;
+        posY = 0;
+      }
+      if (currentScale > 5) currentScale = 5;
+      updateImageTransform();
     }
 
     function resetZoom() {
       currentScale = 1;
-      document.getElementById('modal-img').style.transform = \`scale(\${currentScale})\`;
+      posX = 0;
+      posY = 0;
+      updateImageTransform();
     }
+
+    function updateImageTransform() {
+      const imgElem = document.getElementById('modal-img');
+      imgElem.style.transform = \`scale(\${currentScale}) translate(\${posX}px, \${posY}px)\`;
+    }
+
+    // Drag and Pan Listeners
+    const imgContainer = document.getElementById('image-container');
+
+    imgContainer.addEventListener('mousedown', (e) => {
+      if (currentScale > 1) {
+        isDragging = true;
+        startX = e.clientX - posX;
+        startY = e.clientY - posY;
+      }
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      posX = (e.clientX - startX);
+      posY = (e.clientY - startY);
+      updateImageTransform();
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    // Touch Support for Mobile Dragging
+    imgContainer.addEventListener('touchstart', (e) => {
+      if (currentScale > 1 && e.touches.length === 1) {
+        isDragging = true;
+        startX = e.touches[0].clientX - posX;
+        startY = e.touches[0].clientY - posY;
+      }
+    });
+
+    window.addEventListener('touchmove', (e) => {
+      if (!isDragging || e.touches.length !== 1) return;
+      posX = (e.touches[0].clientX - startX);
+      posY = (e.touches[0].clientY - startY);
+      updateImageTransform();
+    });
+
+    window.addEventListener('touchend', () => {
+      isDragging = false;
+    });
 
     async function handleSearch(event) {
       event.preventDefault();
