@@ -194,11 +194,41 @@ const HTML_PAGE = `<!DOCTYPE html>
     .image-option-btn.active { background-color: var(--primary-color); color: #fff; border-color: var(--primary-color); }
     .preview-box img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-top: 8px; }
     .results-grid { margin-top: 20px; display: flex; flex-direction: column; gap: 16px; }
-    .product-card { background: var(--card-bg); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); display: flex; gap: 16px; align-items: center; }
+    .product-card { background: var(--card-bg); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); display: flex; gap: 16px; align-items: center; cursor: pointer; transition: transform 0.1s ease; }
+    .product-card:active { transform: scale(0.98); }
     .product-card img { width: 80px; height: 80px; object-fit: cover; border-radius: 8px; background-color: #eee; }
     .product-info h3 { font-size: 1.1rem; margin-bottom: 4px; }
     .product-info .badge { display: inline-block; background: #eef5ff; color: var(--primary-color); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-bottom: 6px; }
     .product-info p { font-size: 0.875rem; color: var(--text-muted); }
+    
+    /* Modal Detail Overlay Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 1000; padding: 16px;
+    }
+    .modal-content {
+      background: var(--card-bg);
+      width: 100%; max-width: 500px;
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex; flex-direction: column; gap: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+      position: relative;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-content img {
+      width: 100%; max-height: 320px; object-fit: contain;
+      border-radius: 8px; background: #000;
+    }
+    .modal-close-btn {
+      position: absolute; top: 12px; right: 16px;
+      background: none; border: none; font-size: 1.8rem;
+      cursor: pointer; color: var(--text-muted); line-height: 1;
+    }
+
     .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #323232; color: #fff; padding: 12px 24px; border-radius: 24px; font-size: 0.9rem; z-index: 1000; }
   </style>
 </head>
@@ -281,6 +311,19 @@ const HTML_PAGE = `<!DOCTYPE html>
       </form>
     </section>
   </main>
+
+  <!-- FULL SCREEN PRODUCT DETAIL MODAL -->
+  <div id="product-modal" class="modal-overlay hidden" onclick="closeProductModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <button class="modal-close-btn" onclick="closeProductModalDirect()">&times;</button>
+      <img id="modal-img" src="" alt="Product Image">
+      <div>
+        <span id="modal-badge" class="badge"></span>
+        <h2 id="modal-title" style="font-size: 1.3rem; margin: 8px 0;"></h2>
+        <p id="modal-desc" style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap;"></p>
+      </div>
+    </div>
+  </div>
 
   <div id="toast" class="toast hidden"></div>
 
@@ -398,6 +441,25 @@ const HTML_PAGE = `<!DOCTYPE html>
       }
     }
 
+    // Modal Control Functions
+    function openProductModal(product) {
+      document.getElementById('modal-img').src = product.imageUrl || 'https://via.placeholder.com/300';
+      document.getElementById('modal-badge').innerText = product.type;
+      document.getElementById('modal-title').innerText = product.name;
+      document.getElementById('modal-desc').innerText = product.description;
+      document.getElementById('product-modal').classList.remove('hidden');
+    }
+
+    function closeProductModal(event) {
+      if (event.target.id === 'product-modal') {
+        document.getElementById('product-modal').classList.add('hidden');
+      }
+    }
+
+    function closeProductModalDirect() {
+      document.getElementById('product-modal').classList.add('hidden');
+    }
+
     async function handleSearch(event) {
       event.preventDefault();
       const type = document.getElementById('search-type').value;
@@ -429,6 +491,8 @@ const HTML_PAGE = `<!DOCTYPE html>
               <p>\${product.description}</p>
             </div>
           \`;
+          // Open screen-fit view when card is clicked
+          card.onclick = () => openProductModal(product);
           resultsContainer.appendChild(card);
         });
       } catch (error) {
