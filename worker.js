@@ -76,9 +76,9 @@ async function handleSubmit(request, env) {
 
     const timestamp = Date.now();
     const sanitizeName = body.name.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-    const imagePath = `uploads/images/${timestamp}_${sanitizeName}.png`;
+    const imagePath = `uploads/images/${timestamp}_${sanitizeName}.jpg`;
 
-    // 3. Commit Image to GitHub
+    // 3. Commit Compressed Image to GitHub
     const imageCommitUrl = `https://api.github.com/repos/${env.GITHUB_REPO_OWNER}/${env.GITHUB_REPO_NAME}/contents/${imagePath}`;
     const imgRes = await fetch(imageCommitUrl, {
       method: 'PUT',
@@ -88,7 +88,7 @@ async function handleSubmit(request, env) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        message: `upload image: ${imagePath}`,
+        message: `upload compressed image: ${imagePath}`,
         content: body.image.content
       })
     });
@@ -267,6 +267,8 @@ const HTML_PAGE = `<!DOCTYPE html>
   <div id="toast" class="toast hidden"></div>
 
   <script>
+    let compressedImageDataUrl = null;
+
     function switchTab(tabName) {
       const searchView = document.getElementById('search-view');
       const submitView = document.getElementById('submit-view');
@@ -293,20 +295,69 @@ const HTML_PAGE = `<!DOCTYPE html>
       setTimeout(() => toast.classList.add('hidden'), 3000);
     }
 
-    function previewImage(event) {
+    // Client-side image compression helper (~100KB target)
+    function compressImage(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (e) => {
+          const img = new Image();
+          img.src = e.target.result;
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+            const maxDimension = 900; // Resize bounds to keep file size small
+
+            if (width > maxDimension || height > maxDimension) {
+              if (width > height) {
+                height = Math.round((height * maxDimension) / width);
+                width = maxDimension;
+              } else {
+                width = Math.round((width * maxDimension) / height);
+                height = maxDimension;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            let quality = 0.8;
+            let dataUrl = canvas.toDataURL('image/jpeg', quality);
+
+            // Iteratively reduce quality until target size (~100KB) is approached
+            while ((dataUrl.length * 0.75) > 120 * 1024 && quality > 0.2) {
+              quality -= 0.1;
+              dataUrl = canvas.toDataURL('image/jpeg', quality);
+            }
+
+            resolve(dataUrl);
+          };
+          img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+      });
+    }
+
+    async function previewImage(event) {
       const file = event.target.files[0];
       if (file) {
-        if (file.size > 2 * 1024 * 1024) {
-          showToast('Image size exceeds maximum limit of 2MB.');
+        if (file.size > 15 * 1024 * 1024) {
+          showToast('Image is too large.');
           event.target.value = '';
           return;
         }
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          document.getElementById('image-preview').src = e.target.result;
+        try {
+          showToast('Compressing image...');
+          compressedImageDataUrl = await compressImage(file);
+          document.getElementById('image-preview').src = compressedImageDataUrl;
           document.getElementById('image-preview-container').classList.remove('hidden');
-        };
-        reader.readAsDataURL(file);
+          showToast('Image compressed successfully!');
+        } catch (err) {
+          showToast('Failed to process image.');
+        }
       }
     }
 
@@ -352,6 +403,12 @@ const HTML_PAGE = `<!DOCTYPE html>
     async function handleSubmit(event) {
       event.preventDefault();
       const submitBtn = document.getElementById('submit-btn');
+
+      if (!compressedImageDataUrl) {
+        showToast('Please select and wait for image compression');
+        return;
+      }
+
       submitBtn.disabled = true;
       submitBtn.innerText = 'Submitting...';
 
@@ -361,53 +418,42 @@ const HTML_PAGE = `<!DOCTYPE html>
       const password = document.getElementById('submit-password').value;
       const imageFile = document.getElementById('submit-image').files[0];
 
-      if (!imageFile) {
-        showToast('Please select an image');
-        submitBtn.disabled = false;
-        submitBtn.innerText = 'Submit Product';
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        const base64Image = e.target.result.split(',')[1];
-        const payload = {
-          type,
-          name,
-          description,
-          password,
-          image: {
-            filename: imageFile.name,
-            content: base64Image
-          }
-        };
-
-        try {
-          const response = await fetch('/api/submit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-
-          const result = await response.json();
-
-          if (response.ok && result.success) {
-            showToast('Product successfully submitted!');
-            document.getElementById('submit-form').reset();
-            document.getElementById('image-preview-container').classList.add('hidden');
-            switchTab('search');
-          } else {
-            throw new Error(result.message || 'Submission failed');
-          }
-        } catch (err) {
-          showToast('Error: ' + err.message);
-        } finally {
-          submitBtn.disabled = false;
-          submitBtn.innerText = 'Submit Product';
+      const base64Image = compressedImageDataUrl.split(',')[1];
+      const payload = {
+        type,
+        name,
+        description,
+        password,
+        image: {
+          filename: imageFile ? imageFile.name + '.jpg' : 'product.jpg',
+          content: base64Image
         }
       };
 
-      reader.readAsDataURL(imageFile);
+      try {
+        const response = await fetch('/api/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          showToast('Product successfully submitted!');
+          document.getElementById('submit-form').reset();
+          document.getElementById('image-preview-container').classList.add('hidden');
+          compressedImageDataUrl = null;
+          switchTab('search');
+        } else {
+          throw new Error(result.message || 'Submission failed');
+        }
+      } catch (err) {
+        showToast('Error: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'Submit Product';
+      }
     }
   </script>
 </body>
