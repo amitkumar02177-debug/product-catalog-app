@@ -36,7 +36,7 @@ async function handleSearch(url, env) {
     const res = await fetch(githubUrl, {
       headers: {
         'User-Agent': 'CloudflareWorker-App',
-        'Authorization': `Bearer ${env.GITHUB_PERSONAL_ACCESS_TOKEN}`
+        'Authorization': `Bearer ${env.GH_ACCESS_TOKEN}`
       }
     });
 
