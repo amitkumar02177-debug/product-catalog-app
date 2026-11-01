@@ -19,5 +19,12 @@
     "name": "ITEL ACE3 SHINE",
     "description": "Our Price 1199/-",
     "imageUrl": "https://raw.githubusercontent.com/amitkumar02177-debug/product-catalog-app/main/uploads/images/1793524794141_itel_ace3_shine.jpg"
+  },
+  {
+    "id": "1793524887196",
+    "type": "Mobile",
+    "name": "ITEL ACE2 HEERA",
+    "description": "Our Price 1199/-",
+    "imageUrl": "https://raw.githubusercontent.com/amitkumar02177-debug/product-catalog-app/main/uploads/images/1793524887196_itel_ace2_heera.jpg"
   }
 ]
