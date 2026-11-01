@@ -88,7 +88,7 @@ async function handleSubmit(request, env) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        message: `upload compressed image: ${imagePath}`,
+        message: `upload camera/compressed image: ${imagePath}`,
         content: body.image.content
       })
     });
@@ -182,6 +182,9 @@ const HTML_PAGE = `<!DOCTYPE html>
     .btn-secondary { background-color: #e4e6eb; color: #333; }
     .form-actions { display: flex; gap: 12px; }
     .form-actions .btn { flex: 1; }
+    .image-options { display: flex; gap: 10px; margin-bottom: 8px; }
+    .image-option-btn { flex: 1; padding: 10px; border: 1px solid var(--border-color); background: #f8f9fa; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.9rem; text-align: center; }
+    .image-option-btn.active { background-color: var(--primary-color); color: #fff; border-color: var(--primary-color); }
     .preview-box img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; margin-top: 8px; }
     .results-grid { margin-top: 20px; display: flex; flex-direction: column; gap: 16px; }
     .product-card { background: var(--card-bg); border-radius: var(--radius); padding: 16px; box-shadow: var(--shadow); display: flex; gap: 16px; align-items: center; }
@@ -242,8 +245,16 @@ const HTML_PAGE = `<!DOCTYPE html>
           <input type="text" id="submit-name" class="form-input" placeholder="Enter full name" required maxlength="100">
         </div>
         <div class="form-group">
-          <label for="submit-image">Product Image</label>
-          <input type="file" id="submit-image" class="form-input" accept="image/png, image/jpeg, image/webp" required onchange="previewImage(event)">
+          <label>Product Image</label>
+          <div class="image-options">
+            <button type="button" id="btn-mode-gallery" class="image-option-btn active" onclick="setImageMode('gallery')">📁 Choose File</button>
+            <button type="button" id="btn-mode-camera" class="image-option-btn" onclick="setImageMode('camera')">📸 Open Camera</button>
+          </div>
+          <!-- Gallery Input -->
+          <input type="file" id="submit-image-gallery" class="form-input" accept="image/png, image/jpeg, image/webp" onchange="previewImage(event)">
+          <!-- Camera Input -->
+          <input type="file" id="submit-image-camera" class="form-input hidden" accept="image/*" capture="environment" onchange="previewImage(event)">
+          
           <div id="image-preview-container" class="preview-box hidden">
             <img id="image-preview" src="" alt="Preview">
           </div>
@@ -295,6 +306,27 @@ const HTML_PAGE = `<!DOCTYPE html>
       setTimeout(() => toast.classList.add('hidden'), 3000);
     }
 
+    function setImageMode(mode) {
+      const galleryInput = document.getElementById('submit-image-gallery');
+      const cameraInput = document.getElementById('submit-image-camera');
+      const btnGallery = document.getElementById('btn-mode-gallery');
+      const btnCamera = document.getElementById('btn-mode-camera');
+
+      if (mode === 'camera') {
+        galleryInput.classList.add('hidden');
+        galleryInput.value = '';
+        cameraInput.classList.remove('hidden');
+        btnCamera.classList.add('active');
+        btnGallery.classList.remove('active');
+      } else {
+        cameraInput.classList.add('hidden');
+        cameraInput.value = '';
+        galleryInput.classList.remove('hidden');
+        btnGallery.classList.add('active');
+        btnCamera.classList.remove('active');
+      }
+    }
+
     // Client-side image compression helper (~100KB target)
     function compressImage(file) {
       return new Promise((resolve, reject) => {
@@ -306,7 +338,7 @@ const HTML_PAGE = `<!DOCTYPE html>
           img.onload = () => {
             let width = img.width;
             let height = img.height;
-            const maxDimension = 900; // Resize bounds to keep file size small
+            const maxDimension = 900;
 
             if (width > maxDimension || height > maxDimension) {
               if (width > height) {
@@ -327,7 +359,6 @@ const HTML_PAGE = `<!DOCTYPE html>
             let quality = 0.8;
             let dataUrl = canvas.toDataURL('image/jpeg', quality);
 
-            // Iteratively reduce quality until target size (~100KB) is approached
             while ((dataUrl.length * 0.75) > 120 * 1024 && quality > 0.2) {
               quality -= 0.1;
               dataUrl = canvas.toDataURL('image/jpeg', quality);
@@ -344,17 +375,17 @@ const HTML_PAGE = `<!DOCTYPE html>
     async function previewImage(event) {
       const file = event.target.files[0];
       if (file) {
-        if (file.size > 15 * 1024 * 1024) {
+        if (file.size > 20 * 1024 * 1024) {
           showToast('Image is too large.');
           event.target.value = '';
           return;
         }
         try {
-          showToast('Compressing image...');
+          showToast('Processing image...');
           compressedImageDataUrl = await compressImage(file);
           document.getElementById('image-preview').src = compressedImageDataUrl;
           document.getElementById('image-preview-container').classList.remove('hidden');
-          showToast('Image compressed successfully!');
+          showToast('Image ready!');
         } catch (err) {
           showToast('Failed to process image.');
         }
@@ -405,7 +436,7 @@ const HTML_PAGE = `<!DOCTYPE html>
       const submitBtn = document.getElementById('submit-btn');
 
       if (!compressedImageDataUrl) {
-        showToast('Please select and wait for image compression');
+        showToast('Please select or capture an image first');
         return;
       }
 
@@ -416,7 +447,6 @@ const HTML_PAGE = `<!DOCTYPE html>
       const name = document.getElementById('submit-name').value.trim();
       const description = document.getElementById('submit-description').value.trim();
       const password = document.getElementById('submit-password').value;
-      const imageFile = document.getElementById('submit-image').files[0];
 
       const base64Image = compressedImageDataUrl.split(',')[1];
       const payload = {
@@ -425,7 +455,7 @@ const HTML_PAGE = `<!DOCTYPE html>
         description,
         password,
         image: {
-          filename: imageFile ? imageFile.name + '.jpg' : 'product.jpg',
+          filename: 'product_capture.jpg',
           content: base64Image
         }
       };
@@ -444,6 +474,7 @@ const HTML_PAGE = `<!DOCTYPE html>
           document.getElementById('submit-form').reset();
           document.getElementById('image-preview-container').classList.add('hidden');
           compressedImageDataUrl = null;
+          setImageMode('gallery');
           switchTab('search');
         } else {
           throw new Error(result.message || 'Submission failed');
