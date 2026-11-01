@@ -61,8 +61,8 @@ async function handleSubmit(request, env) {
   try {
     const body = await request.json();
 
-    // 1. Password Verification Check (with fallback to 'admin123' if Cloudflare secret isn't bound)
-    const validPassword = env.SUBMISSION_PASSWORD || 'aditi108';
+    // 1. Password Verification Check (fallback to 'admin123')
+    const validPassword = env.SUBMISSION_PASSWORD || 'admin123';
     if (!body.password || body.password !== validPassword) {
       return new Response(JSON.stringify({ success: false, message: 'Unauthorized: Incorrect password' }), {
         headers: HEADERS,
@@ -89,12 +89,15 @@ async function handleSubmit(request, env) {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        message: `upload camera/compressed image: ${imagePath}`,
+        message: `upload image: ${imagePath}`,
         content: body.image.content
       })
     });
 
-    if (!imgRes.ok) throw new Error('Failed to commit image asset to GitHub');
+    if (!imgRes.ok) {
+      const errText = await imgRes.text();
+      throw new Error(`GitHub Error (${imgRes.status}): ${errText}`);
+    }
 
     const imageUrl = `https://raw.githubusercontent.com/${env.GITHUB_REPO_OWNER}/${env.GITHUB_REPO_NAME}/main/${imagePath}`;
 
@@ -139,7 +142,10 @@ async function handleSubmit(request, env) {
       })
     });
 
-    if (!updateRes.ok) throw new Error('Failed to update products store JSON');
+    if (!updateRes.ok) {
+      const errText = await updateRes.text();
+      throw new Error(`GitHub JSON Update Error (${updateRes.status}): ${errText}`);
+    }
 
     return new Response(JSON.stringify({ success: true }), { headers: HEADERS, status: 200 });
   } catch (err) {
@@ -304,7 +310,7 @@ const HTML_PAGE = `<!DOCTYPE html>
       const toast = document.getElementById('toast');
       toast.innerText = message;
       toast.classList.remove('hidden');
-      setTimeout(() => toast.classList.add('hidden'), 3000);
+      setTimeout(() => toast.classList.add('hidden'), 4000);
     }
 
     function setImageMode(mode) {
@@ -328,7 +334,6 @@ const HTML_PAGE = `<!DOCTYPE html>
       }
     }
 
-    // Client-side image compression helper (~100KB target)
     function compressImage(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
