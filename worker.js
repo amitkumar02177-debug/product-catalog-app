@@ -201,7 +201,7 @@ const HTML_PAGE = `<!DOCTYPE html>
     .product-info .badge { display: inline-block; background: #eef5ff; color: var(--primary-color); padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-bottom: 6px; }
     .product-info p { font-size: 0.875rem; color: var(--text-muted); }
     
-    /* True Full-Screen Detail View Styles */
+    /* True Full-Screen Detail View Styles with Zoom */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -219,9 +219,24 @@ const HTML_PAGE = `<!DOCTYPE html>
       padding: 20px; max-width: 600px; width: 100%; margin: 0 auto;
       display: flex; flex-direction: column; gap: 16px; flex: 1;
     }
-    .modal-body img {
-      width: 100%; max-height: 400px; object-fit: contain;
-      border-radius: var(--radius); background: #000;
+    .image-container {
+      position: relative; width: 100%; height: 350px; background: #000;
+      border-radius: var(--radius); overflow: hidden; display: flex;
+      justify-content: center; align-items: center;
+    }
+    .image-container img {
+      max-width: 100%; max-height: 100%; object-fit: contain;
+      transition: transform 0.2s ease; transform-origin: center center;
+    }
+    .zoom-controls {
+      position: absolute; bottom: 12px; right: 12px;
+      display: flex; gap: 8px; background: rgba(0, 0, 0, 0.6);
+      padding: 6px; border-radius: 8px; backdrop-filter: blur(4px);
+    }
+    .zoom-btn {
+      background: #fff; border: none; width: 36px; height: 36px;
+      border-radius: 6px; font-weight: bold; font-size: 1.1rem;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
     }
     .modal-close-btn {
       background: #e4e6eb; border: none; font-size: 1rem;
@@ -312,14 +327,21 @@ const HTML_PAGE = `<!DOCTYPE html>
     </section>
   </main>
 
-  <!-- TRUE FULL-SCREEN PRODUCT DETAIL VIEW -->
+  <!-- TRUE FULL-SCREEN PRODUCT DETAIL VIEW WITH ZOOM -->
   <div id="product-modal" class="modal-overlay hidden">
     <div class="modal-header">
       <h2>Product Details</h2>
       <button class="modal-close-btn" onclick="closeProductModalDirect()">Close ✕</button>
     </div>
     <div class="modal-body">
-      <img id="modal-img" src="" alt="Product Image">
+      <div class="image-container">
+        <img id="modal-img" src="" alt="Product Image">
+        <div class="zoom-controls">
+          <button type="button" class="zoom-btn" onclick="zoomImage(0.25)" title="Zoom In">+</button>
+          <button type="button" class="zoom-btn" onclick="zoomImage(-0.25)" title="Zoom Out">-</button>
+          <button type="button" class="zoom-btn" onclick="resetZoom()" title="Reset">⟲</button>
+        </div>
+      </div>
       <div>
         <span id="modal-badge" class="badge"></span>
         <h1 id="modal-title" style="font-size: 1.5rem; margin: 8px 0;"></h1>
@@ -332,6 +354,7 @@ const HTML_PAGE = `<!DOCTYPE html>
 
   <script>
     let compressedImageDataUrl = null;
+    let currentScale = 1;
 
     function switchTab(tabName) {
       const searchView = document.getElementById('search-view');
@@ -444,9 +467,12 @@ const HTML_PAGE = `<!DOCTYPE html>
       }
     }
 
-    // Full-Screen View Control Functions
+    // Zoom & Full-Screen View Control Functions
     function openProductModal(product) {
-      document.getElementById('modal-img').src = product.imageUrl || 'https://via.placeholder.com/300';
+      currentScale = 1;
+      const imgElem = document.getElementById('modal-img');
+      imgElem.style.transform = \`scale(\${currentScale})\`;
+      imgElem.src = product.imageUrl || 'https://via.placeholder.com/300';
       document.getElementById('modal-badge').innerText = product.type;
       document.getElementById('modal-title').innerText = product.name;
       document.getElementById('modal-desc').innerText = product.description;
@@ -455,6 +481,18 @@ const HTML_PAGE = `<!DOCTYPE html>
 
     function closeProductModalDirect() {
       document.getElementById('product-modal').classList.add('hidden');
+    }
+
+    function zoomImage(amount) {
+      currentScale += amount;
+      if (currentScale < 1) currentScale = 1; // Don't shrink below normal
+      if (currentScale > 4) currentScale = 4; // Max zoom cap
+      document.getElementById('modal-img').style.transform = \`scale(\${currentScale})\`;
+    }
+
+    function resetZoom() {
+      currentScale = 1;
+      document.getElementById('modal-img').style.transform = \`scale(\${currentScale})\`;
     }
 
     async function handleSearch(event) {
@@ -488,7 +526,6 @@ const HTML_PAGE = `<!DOCTYPE html>
               <p>\${product.description}</p>
             </div>
           \`;
-          // Open true full-screen detail view when card is clicked
           card.onclick = () => openProductModal(product);
           resultsContainer.appendChild(card);
         });
