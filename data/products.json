@@ -26,5 +26,12 @@
     "name": "ITEL ACE2 HEERA",
     "description": "Our Price 1199/-",
     "imageUrl": "https://raw.githubusercontent.com/amitkumar02177-debug/product-catalog-app/main/uploads/images/1793524887196_itel_ace2_heera.jpg"
+  },
+  {
+    "id": "1793529096077",
+    "type": "Electronics",
+    "name": "Exide Battery 250 AH",
+    "description": "Our Price 24999/-\n\n60 Month Warranty \n\nTubular Battery",
+    "imageUrl": "https://raw.githubusercontent.com/amitkumar02177-debug/product-catalog-app/main/uploads/images/1793529096077_exide_battery_250_ah.jpg"
   }
 ]
