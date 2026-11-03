@@ -33,5 +33,12 @@
     "name": "Exide Battery 250 AH",
     "description": "Our Price 24999/-\n\n60 Month Warranty \n\nTubular Battery",
     "imageUrl": "https://raw.githubusercontent.com/amitkumar02177-debug/product-catalog-app/main/uploads/images/1793529096077_exide_battery_250_ah.jpg"
+  },
+  {
+    "id": "1793711457150",
+    "type": "Electronics",
+    "name": "Bajaj Immersion Water Heater 1.5kW",
+    "description": "Our Price 899/-\nLeak Proof \nShock Resistant \nPlastic Handle \n1.5 M Cable \n16 A Plug",
+    "imageUrl": "https://raw.githubusercontent.com/amitkumar02177-debug/product-catalog-app/main/uploads/images/1793711457150_bajaj_immersion_water_heater_1_5kw.jpg"
   }
 ]
